@@ -5,7 +5,7 @@ L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     subdomains: ['a','b','c']
 }).addTo(mymap);
 
-var testPoints = [[35.99, -78.8986, 0.2], // lat, long, intensity
+var testPoints = [[35, -78.8986, 0.2], // lat, long, intensity
     [35.99, -78.8986, 0.2],
     [35.99, -78.8986, 0.2],
     [35.99, -78.8986, 0.2],
@@ -14,14 +14,23 @@ var testPoints = [[35.99, -78.8986, 0.2], // lat, long, intensity
     [35.99, -78.8986, 0.2],
     [35.99, -78.8986, 0.2],
     [35.99, -78.8986, 0.2],
-    [35.97, -79, 0.5]];
+    [35.99, -79, 0.5]];
 
-var heat = updateHeatLayer(testPoints);
+var heat = null;
 
+$(document).ready(function(){initHeatLayer(testPoints);});
+//var heat = updateHeatLayer(testPoints);
+
+function initHeatLayer(points) {
+    console.log("Initializing heat layer: " + points);
+    heat = L.heatLayer(points, {radius: 25}).addTo(mymap);
+}
 
 function updateHeatLayer(points) {
-    console.log("Updating heat layer");
-    L.heatLayer(points, {radius: 25}).addTo(mymap);
+    console.log("Updating heat layer: " + points);
+    for (var i = 0; i < points.length; i++) {
+        heat.addLatLng(points[i]);
+    }
 }
 
 mymap.on('moveend', function() {
@@ -41,7 +50,7 @@ mymap.on('moveend', function() {
             long2: lowerRightLong},
         //contentType: 'application/json; charset=utf-8',
         //dataType: "json",
-        success: function(data){updateHeatLayer(data.content);},
+        success: function(response){console.log("got data: " + response); updateHeatLayer(response.data);},
         error: function(err){}
     });
 });

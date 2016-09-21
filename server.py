@@ -11,7 +11,8 @@ class GetDataHandler(tornado.web.RequestHandler):
         tornado.web.RequestHandler.__init__(self, *args, **kwargs)
     
     def set_default_headers(self):
-        self.set_header("Access-Control-Allow-Origin", "http://localhost:8080")
+    # TODO: change to 'http://localhost:8080' after I am done developing
+        self.set_header("Access-Control-Allow-Origin", "*")
         self.set_header("Access-Control-Allow-Headers", "x-requested-with, Content-Type, Origin, Accept")
         self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
         
@@ -23,7 +24,28 @@ class GetDataHandler(tornado.web.RequestHandler):
         long2 = self.get_argument("long2", None)
         print "point1: ", lat1, long1
         print "point2: ", lat2, long2
-        #self.write("This is the returned data");
+        
+        points = [[35, -78, .2], 
+            [35.97, -78.89, .2], 
+            [35.97, -78.89, .2], 
+            [35.97, -78.89, .2], 
+            [35.97, -78.89, .2],
+            [35.97, -78.89, .2],
+            [35.97, -78.89, .2],
+            [35.97, -78.89, .2],
+            [35.97, -78.89, .2],
+            [35.97, -78.89, .2],
+            [35.97, -78.89, .2],
+            [35.97, -78.89, .2],
+            [35.97, -78.89, .2],
+            [35.97, -78.89, .2],
+            [35.97, -78.89, .2],
+            [35.97, -78.89, .2],
+            [35.97, -78.89, .2],
+            [35.97, -78.89, .2],
+            [35.97, -78.89, .2]]
+        response = {'data': points}
+        self.write(response);
         
     def options(self, *args, **kwargs):
         print "handling options"
