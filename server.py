@@ -3,10 +3,10 @@ import tornado.web
 import tornado.httpserver
 import simplejson
 from pymongo import MongoClient
+from pymongo import GEOSPHERE
 
 import os
 from socket import AF_INET
-
 
 class GetDataHandler(tornado.web.RequestHandler):
     def initialize(self, mongo):
@@ -59,19 +59,52 @@ class GetDataHandler(tornado.web.RequestHandler):
     def options(self, *args, **kwargs):
         print "handling options"
         #self.write('200')
-        
 
-        
+'''
+Imports the full data set into a mongo collection in a single operation. It
+does this by building a temporary collection and then swapping it with the
+real collection.
+'''
+class MongoFullImporter(object):
+    def __init__(self, mongo, db_name, collection_name):
+        self.mongo = mongo
+        self.coll = collection_name
+        self.old_collection = self.mongo[db_name][self.coll]
+        self.new_collection = self.mongo[db_name][self.coll + "_next"]
+    
+    def import_data(self):
+        try:
+            self._run_import()
+        except Exception as e:
+            print "Exception while importing. Database left intact. Error:", e
+            self.new_collection.drop()
+            
+    def _run_import(self):
+        # Clean up if the previous import failed
+        if self.new_collection.count() > 0:
+            self.new_collection.drop()
+
+        self.new_collection.create_index([("loc", GEOSPHERE)])
+        loader = DataLoader(self.mongo, self.new_collection)
+        loader.import_data()
+
+        # Don't import if something went catastrophically wrong
+        if self.new_collection.count() > 0:
+            # swapping the collections
+            self.old_collection.drop()
+            self.new_collection.rename(self.coll)
+            
+'''
+Loads data into an existing mongo collection
+'''
 class DataLoader(object):
     BLOCK_FILE_NAME = "GeoLiteCity-latest\\GeoLiteCity_20160907\\GeoLiteCity-Blocks.csv"
     LOC_FILE_NAME = "GeoLiteCity-latest\\GeoLiteCity_20160907\\GeoLiteCity-Location.csv"
     
-    def __init__(self, mongo, db_name, collection_name):
-        self.mongo = mongo
-        # TODO: test what happens if the database or collection doesn't exist
-        self.coll = self.mongo[db_name][collection_name]
+    def __init__(self, mongo_client, db_collection):
+        self.db_collection = db_collection
         
-    def build_location_index(self):
+    def _build_location_index(self):
         locations = {}
         with open(self.LOC_FILE_NAME) as datafile:
             for _ in xrange(2):
@@ -87,8 +120,8 @@ class DataLoader(object):
         print "Read", len(locations), "locations"
         return locations
     
-    def load_file(self, mongo_client):
-        locations = self.build_location_index()
+    def import_data(self):
+        locations = self._build_location_index()
 
         i = 0
         with open(self.BLOCK_FILE_NAME) as datafile:
@@ -98,21 +131,18 @@ class DataLoader(object):
                 
             for line in datafile:
                 tokens = line.split(",")
-                print tokens
-                # I don't actually need the ranges. It's only the points we care about, but let's put it in mongo anyway.
                 ip_start = tokens[0][1:-2]
                 ip_end = tokens[1][1:-2]
                 location_code = tokens[2][1:-2]
                 point = locations[location_code]
-                #print "mongo doc:", self.build_mongo_doc(location_code, ip_start, ip_end, point[0], point[1])
-                self.coll.insert_one(self.build_mongo_doc(
+                self.db_collection.insert_one(self._build_mongo_doc(
                         location_code, ip_start, ip_end, point[0], point[1]))
                 
-                i += 1
-                if i == 10:
-                    return
+                #i += 1
+                #if i == 10:
+                #    return
 
-    def build_mongo_doc(self, location_code, ip_start, ip_end, lat, lon):
+    def _build_mongo_doc(self, location_code, ip_start, ip_end, lat, lon):
         doc = {}
         doc['ipstart'] = ip_start
         doc['ipend'] = ip_end
@@ -126,8 +156,8 @@ class DataLoader(object):
 def main():
     # TODO: pick up mongo URI from command line or a config file
     mongo_client = MongoClient()
-    loader = DataLoader(mongo_client, "ipmap", "locations")
-    loader.load_file(mongo_client)
+    loader = MongoFullImporter(mongo_client, "ipmap", "locations")
+    loader.import_data()
     
     port = 8888
 
