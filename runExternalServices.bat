@@ -1,0 +1,1 @@
+c:\mongodb-2.6\bin\mongod.exe -dbpath C:\mongodata
