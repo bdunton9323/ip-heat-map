@@ -1,4 +1,6 @@
-var mymap = L.map('mapid').setView([35.99, -78.8986], 13);
+// durham: [35.99, -78.8986]
+// manhattan: [40.7831, -73.9712]
+var mymap = L.map('mapid').setView([40.7831, -73.9712], 13);
 
 L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -18,12 +20,16 @@ var testPoints = [[35, -78.8986, 0.2], // lat, long, intensity
 
 var heat = null;
 
-$(document).ready(function(){initHeatLayer(testPoints);});
+$(document).ready(function(){
+    // TODO: do this a better way than having a function initialize a global 'heat' var
+    initHeatLayer();
+    updateView()});
+mymap.on('moveend', updateView);
 //var heat = updateHeatLayer(testPoints);
 
 function initHeatLayer(points) {
     console.log("Initializing heat layer: " + points);
-    heat = L.heatLayer(points, {radius: 25}).addTo(mymap);
+    heat = L.heatLayer([], {radius: 30, blur: 15, maxZoom: 20}).addTo(mymap);
 }
 
 function updateHeatLayer(points) {
@@ -33,11 +39,13 @@ function updateHeatLayer(points) {
     }
 }
 
-mymap.on('moveend', function() {
-    var upperLeftLat = mymap.getBounds().getWest();
-    var upperLeftLong = mymap.getBounds().getNorth();
-    var lowerRightLat = mymap.getBounds().getEast();
-    var lowerRightLong = mymap.getBounds().getSouth();
+function updateView() {
+    var upperLeftLat = mymap.getBounds().getNorth();
+    var upperLeftLong = mymap.getBounds().getWest();
+    var lowerRightLat = mymap.getBounds().getSouth();
+    var lowerRightLong = mymap.getBounds().getEast();
+    
+    console.log("UL: (" + upperLeftLat + ", " + upperLeftLong + ") LR: (" + lowerRightLat + " " + lowerRightLong + ")");
 
     $.ajax({
         type: "GET",
@@ -50,7 +58,11 @@ mymap.on('moveend', function() {
             long2: lowerRightLong},
         //contentType: 'application/json; charset=utf-8',
         //dataType: "json",
-        success: function(response){console.log("got data: " + response); updateHeatLayer(response.data);},
+        success: function(response){
+            console.log("got data: " + response.data[0]); 
+            updateHeatLayer(response.data);
+        },
         error: function(err){}
     });
-});
+}
+
