@@ -39,8 +39,8 @@ class MongoFullImporter(object):
 Loads data into an existing mongo collection
 '''
 class DataLoader(object):
-    BLOCK_FILE_NAME = "GeoLiteCity-latest\\GeoLiteCity_20160907\\GeoLiteCity-Blocks.csv"
-    LOC_FILE_NAME = "GeoLiteCity-latest\\GeoLiteCity_20160907\\GeoLiteCity-Location.csv"
+    BLOCK_FILE_NAME = "geodata\\GeoLiteCity-Blocks.csv"
+    LOC_FILE_NAME = "geodata\\GeoLiteCity-Location.csv"
     
     def __init__(self, mongo_client, db_collection):
         self.db_collection = db_collection
