@@ -10,9 +10,9 @@ from socket import AF_INET
 
 class GetDataHandler(tornado.web.RequestHandler):
          
-    # TODO: this is called for every requeest. I might want to just use the  adapter that I had before
+    # TODO: this is called for every request. I might want to just use the
+    # adapter that I had before
     def initialize(self, mongo, db_name, collection_name):
-        print "in initialize"
         self.mongo = mongo
         self.collection = self.mongo[db_name][collection_name]
     
@@ -27,23 +27,25 @@ class GetDataHandler(tornado.web.RequestHandler):
     is a list of size 2, containing tuples representing the upper-right and
     lower-left corners, for example: [(40.78, -73.97), (40.80, -73.50)]
     
-    Note: The points have to be in lat,long order
+    Note: The points have to be in (longitude,lat) order
     '''
     def build_query(self, plane):
-        point1 = plane[0]
-        point2 = plane[1]
+        LONG = 0
+        LAT = 1
+        point1 = plane[LONG]
+        point2 = plane[LAT]
         
         coords = []
         # mongo expects the points in long,lat order
-        coords.append([point1[1], point1[0]])
-        coords.append([point1[1], point2[0]])
-        coords.append([point2[1], point2[0]])
-        coords.append([point2[1], point1[0]])
+        coords.append([point1[LONG], point1[LAT]])
+        coords.append([point1[LONG], point2[LAT]])
+        coords.append([point2[LONG], point2[LAT]])
+        coords.append([point2[LONG], point1[LAT]])
         # Add the first point again to close the polygon
-        coords.append([point1[1], point1[0]])
+        coords.append([point1[LONG], point1[LAT]])
         
         query = {"loc": {"$geoWithin": {"$geometry": {"type": "Polygon", "coordinates": [coords]}}}}
-        print query
+        #print query
         return query
         
     '''
@@ -66,50 +68,48 @@ class GetDataHandler(tornado.web.RequestHandler):
         return lat1, long1, lat2, long2, zoom
             
     def get(self, *args, **kwargs):
-        print "request: ", self.request.body
         lat1, long1, lat2, long2, zoom = self.parse_args()
-       
-        print "point1: ", lat1, long1
-        print "point2: ", lat2, long2
-        print "zoom: ", zoom
         
-        plane = [(lat1, long1), (lat2, long2)]
-        squares = plane
+        plane = [(long1, lat1), (long2, lat2)]
+        squares = [plane]
         apply_averaging = False
         
         count = self.collection.count(self.build_query(plane))
         print "Got", count, "documents from mongo"
         
-        if count > 5000:
+        if count > 1000:
             apply_averaging = True
-            squares = CoordinateUtils.partition_grid(10, plane)
+            squares = CoordinateUtils.partition_grid(5, plane)
         
         points = []
         for square in squares:
-            cursor = self.collection.find(self.build_query(plane))
-            points_in_square = []
-            for doc in cursor:
-                result = doc['loc']['coordinates']
-                # TODO: the intensity might need to be scaled by the zoom factor
-                points_in_square.append((result[1], result[0], .2))
-            if apply_averaging:
-                points.append( CoordinateUtils.find_center(points_in_square) )
-            else:
-                points.extend(points_in_square)
-        
-        #points = []
-        #for doc in cursor:
-        #    result = doc['loc']['coordinates']
-        #    # tuple is (lat, long, weight)
-        #    points.append((result[1], result[0], 10))
-        
+            cursor = self.collection.find(self.build_query(square))
+            points_in_square = self.get_points_from_result(cursor)
+            
+            if points_in_square:
+                if apply_averaging:
+                    center = CoordinateUtils.find_center(points_in_square)
+                    points.append(center)
+                else:
+                    points.extend(points_in_square)
         
         response = {'data': points}
         self.write(response);
         
-    #def apply_averaging(self, points, zoom):
-    #    CartesianUtils.partition_grid(10, )
-    #    PointAverager.collapse([[1, 1, 1], [-1, -1, 1]]);
+    def get_points_from_result(self, cursor):
+        points = []
+        for doc in cursor:
+            result = doc['loc']['coordinates']
+            # TODO: intensity needs to take into account the number of points.
+            # Also something needs to change with the zoom factor (higher blur? bigger 
+            # circles?) When doing the partitioned version, the radius should reflect the
+            # spread of points. Maybe I can base the radius on the maximum distance within 
+            # that grid cell.
+            
+            # The map wants it in lat/long order, so just do it here to avoid
+            # reordering the list later
+            points.append((result[1], result[0], 5))
+        return points
 
     def options(self, *args, **kwargs):
         print "handling options"

@@ -22,9 +22,9 @@ class CoordinateUtils(object):
             total_weight += p[2]
 
         if total_weight == 0:
-            return [0, 0, 0]
+            return []
         else:
-            return [total_long/total_weight, total_lat/total_weight, total_weight/len(points)]
+            return [total_long/total_weight, total_lat/total_weight, total_weight]
         
     '''
     Divides a plane into a grid. The plane is given by two points: the upper-left corner
@@ -33,21 +33,25 @@ class CoordinateUtils(object):
     '''
     @staticmethod
     def partition_grid(width, plane):
+        LONG = 0
+        LAT = 1
         # TODO: does it matter if these are lat,long or long,lat?
         upper_left = plane[0]
         lower_right = plane[1]
         
-        x_dist = lower_right[0] - upper_left[0]
-        y_dist = upper_left[1] - lower_right[1]
-        if x_dist < 0 or y_dist < 0:
+        if upper_left[LONG] > lower_right[LONG] or upper_left[LAT] < lower_right[LAT]:
             raise ValueError("The coordinates were backward UL: " + str(upper_left) + ", LR: " + str(lower_right))
+            
+        x_dist = abs(lower_right[LONG] - upper_left[LONG])
+        y_dist = abs(upper_left[LAT] - lower_right[LAT])
+        
             
         grid = []
         dx = x_dist / width
         dy = y_dist / width
         
-        ul_x = upper_left[0]
-        ul_y = upper_left[1]
+        ul_x = upper_left[LONG]
+        ul_y = upper_left[LAT]
         lr_x = ul_x + dx
         lr_y = ul_y - dy
         for y in xrange(width):
@@ -58,7 +62,7 @@ class CoordinateUtils(object):
                 lr_x += dx
             ul_y -= dy
             lr_y -= dy
-            ul_x = upper_left[0]
+            ul_x = upper_left[LONG]
             lr_x = ul_x + dx
         
         return grid

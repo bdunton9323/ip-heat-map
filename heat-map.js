@@ -12,15 +12,12 @@ var heatMap = {
     points: [],
     
     initHeatLayer: function() {
-        console.log("Initializing heat layer: " + this.points);
         this.heat = L.heatLayer([], {radius: 30, blur: 15, maxZoom: 20}).addTo(mymap);
     },
     
     updateHeatLayer: function(points) {
         this.points = points;
-        for (var i = 0; i < this.points.length; i++) {
-            this.heat.setLatLngs(this.points);
-        }
+        this.heat.setLatLngs(this.points);
     }
 }
 
@@ -36,7 +33,7 @@ function updateView(heatMap) {
         
         // TODO: this has to be the URL of my server as seen externally
         url: "http://localhost:8888/getdata",
-        // TODO: it might be cleaner to pass an array of points: [[x1,y1],[x2,y2]]
+
         data: {
             lat1: upperLeftLat,
             long1: upperLeftLong,
