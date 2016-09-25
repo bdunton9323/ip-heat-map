@@ -33,7 +33,33 @@ class CoordinateUtils(object):
     '''
     @staticmethod
     def partition_grid(width, plane):
-        point1 = plane[0]
-        point2 = plane[1]
+        # TODO: does it matter if these are lat,long or long,lat?
+        upper_left = plane[0]
+        lower_right = plane[1]
         
-        return [[(0, 10), (0,0)], [(10,10), (10,0)]]
+        x_dist = lower_right[0] - upper_left[0]
+        y_dist = upper_left[1] - lower_right[1]
+        if x_dist < 0 or y_dist < 0:
+            raise ValueError("The coordinates were backward UL: " + str(upper_left) + ", LR: " + str(lower_right))
+            
+        grid = []
+        dx = x_dist / width
+        dy = y_dist / width
+        
+        ul_x = upper_left[0]
+        ul_y = upper_left[1]
+        lr_x = ul_x + dx
+        lr_y = ul_y - dy
+        for y in xrange(width):
+            for x in xrange(width):
+                #print "appending UL:", ul_x, ul_y, ", LR: ", lr_x, lr_y
+                grid.append([(ul_x, ul_y), (lr_x, lr_y)])
+                ul_x += dx
+                lr_x += dx
+            ul_y -= dy
+            lr_y -= dy
+            ul_x = upper_left[0]
+            lr_x = ul_x + dx
+        
+        return grid
+        #return [[(0, 10), (0,0)], [(10,10), (10,0)]]
