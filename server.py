@@ -14,27 +14,13 @@ class GetDataHandler(tornado.web.RequestHandler):
         print "in initialize"
         self.mongo = mongo
         self.collection = self.mongo[db_name][collection_name]
-        
-        #TODO: remove this debug code
-        #count = self.collection.count({"loc" : {"$geoWithin" : {"$geometry" : {"type" : "Polygon", "coordinates" : [[[144, -33], [144 , -34], [143 , -34], [143 , -33], [144, -33]]]}}}})
-        #count = self.collection.count({"loc": {"$geoWithin": {"$geometry": {"type": "Polygon", "coordinates": [[
-        #    [-78.9795, 35.9963], [-78.9795, 35.8851], 
-        #    [-78.8421, 35.9963], [-78.8421, 35.8851], [-78.9795, 35.9963]]]}}}})
-        #print "test count is", count
     
     def set_default_headers(self):
-        # TODO: change to 'http://localhost:8080' after I am done developing
+        # TODO: change to the web server's domain after I am done developing
         self.set_header("Access-Control-Allow-Origin", "*")
         self.set_header("Access-Control-Allow-Headers", "x-requested-with, Content-Type, Origin, Accept")
         self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
-        
-    def x_get(self, *args, **kwargs):
-        db = self.mongo['ipmap']
-        collection = db['locations']
-        cursor = collection.find()
-        for doc in cursor:
-            print doc['loc']['coordinates']
-        
+
     '''
     The points are in lat,long order
     '''
@@ -69,7 +55,7 @@ class GetDataHandler(tornado.web.RequestHandler):
         for doc in cursor:
             result = doc['loc']['coordinates']
             # lat, long, weight
-            points.append((result[1], result[0], .2))
+            points.append((result[1], result[0], .3))
         
         response = {'data': points}
         self.write(response);
