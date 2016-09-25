@@ -29,25 +29,32 @@ function updateView(heatMap) {
     var upperLeftLong = mymap.getBounds().getWest();
     var lowerRightLat = mymap.getBounds().getSouth();
     var lowerRightLong = mymap.getBounds().getEast();
-
+    var zoom = mymap.getZoom();
+    
     $.ajax({
         type: "GET",
+        
+        // TODO: this has to be the URL of my server as seen externally
         url: "http://localhost:8888/getdata",
         // TODO: it might be cleaner to pass an array of points: [[x1,y1],[x2,y2]]
         data: {
             lat1: upperLeftLat,
             long1: upperLeftLong,
             lat2: lowerRightLat,
-            long2: lowerRightLong},
+            long2: lowerRightLong,
+            zoom: zoom},
         success: function(response){
-            heatMap.updateHeatLayer(response.data);
+            if (response.data) {
+                heatMap.updateHeatLayer(response.data);
+            }
         },
-        error: function(err){}
+        error: function(err){
+            console.log("Failed to call /getdata. " + 
+                    err.status + ": " + err.statusText);}
     });
 }
 
 $(document).ready(function(){
-    console.log("this is called");
     heatMap.initHeatLayer();
     updateView(heatMap);
     mymap.on('moveend', function(){updateView(heatMap);});

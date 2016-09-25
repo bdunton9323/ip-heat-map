@@ -38,13 +38,29 @@ class GetDataHandler(tornado.web.RequestHandler):
         print query
         return query
         
+    '''
+    Extract the arguments and check for errors in the GET request
+    '''
+    def parse_args(self):
+        error = False
+        lat1, long1, lat2, long2, zoom = (None, None, None, None, None)
+        try:
+            lat1 = float(self.get_argument("lat1", None))
+            long1 = float(self.get_argument("long1", None))
+            lat2 = float(self.get_argument("lat2", None))
+            long2 = float(self.get_argument("long2", None))
+            zoom = int(self.get_argument("zoom", None))
+        except:
+            error = True
+        if error or None in [lat1, long1, lat2, long2, zoom]:
+            raise tornado.web.HTTPError(400)
+
+        return lat1, long1, lat2, long2, zoom
+            
     def get(self, *args, **kwargs):
         print "request: ", self.request.body
-        # TODO: handle bad requests
-        lat1 = float(self.get_argument("lat1", None))
-        long1 = float(self.get_argument("long1", None))
-        lat2 = float(self.get_argument("lat2", None))
-        long2 = float(self.get_argument("long2", None))
+        lat1, long1, lat2, long2, zoom = self.parse_args()
+       
         print "point1: ", lat1, long1
         print "point2: ", lat2, long2
         
@@ -54,7 +70,7 @@ class GetDataHandler(tornado.web.RequestHandler):
         points = []
         for doc in cursor:
             result = doc['loc']['coordinates']
-            # lat, long, weight
+            # tuple is (lat, long, weight)
             points.append((result[1], result[0], .3))
         
         response = {'data': points}
