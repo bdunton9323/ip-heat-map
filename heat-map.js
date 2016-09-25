@@ -10,14 +10,20 @@ L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 var heatMap = {
     heat: null,
     points: [],
+    opts: {radius: 30, blur: 30, maxZoom: 15},
     
     initHeatLayer: function() {
-        this.heat = L.heatLayer([], {radius: 30, blur: 15, maxZoom: 20}).addTo(mymap);
+        this.heat = L.heatLayer([], this.opts).addTo(mymap);
     },
-    
-    updateHeatLayer: function(points) {
+
+    updateHeatLayer: function(points, zoom) {
         this.points = points;
         this.heat.setLatLngs(this.points);
+        if (zoom < 10) {
+            console.log("setting options");
+            //this.opts.blur = 100;
+            this.heat.setOptions(this.opts)
+        }
     }
 }
 
@@ -32,7 +38,7 @@ function updateView(heatMap) {
         type: "GET",
         
         // TODO: this has to be the URL of my server as seen externally
-        url: "http://localhost:8888/getdata",
+        url: "http://192.168.1.8:8888/getdata",
 
         data: {
             lat1: upperLeftLat,
@@ -42,7 +48,7 @@ function updateView(heatMap) {
             zoom: zoom},
         success: function(response){
             if (response.data) {
-                heatMap.updateHeatLayer(response.data);
+                heatMap.updateHeatLayer(response.data, zoom);
             }
         },
         error: function(err){

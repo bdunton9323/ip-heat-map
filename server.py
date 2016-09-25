@@ -77,13 +77,14 @@ class GetDataHandler(tornado.web.RequestHandler):
         count = self.collection.count(self.build_query(plane))
         print "Got", count, "documents from mongo"
         
-        if count > 1000:
+        if count > 10000:
             apply_averaging = True
-            squares = CoordinateUtils.partition_grid(5, plane)
+            squares = CoordinateUtils.partition_grid(20, plane)
         
         points = []
         for square in squares:
-            cursor = self.collection.find(self.build_query(square))
+            cursor = self.collection.find(self.build_query(square), 
+                    projection={"loc.coordinates":1})
             points_in_square = self.get_points_from_result(cursor)
             
             if points_in_square:
