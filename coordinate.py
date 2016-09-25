@@ -3,14 +3,14 @@ Applies averaging across a set of points to adjust the resolution of
 the displayable data. This is necessary when the zoom is too low and
 the number of points is too large.
 '''
-class PointAverager(object):
-    def __init__(self):
-        pass
+class CoordinateUtils(object):
         
     '''
-    A point is a tuple or list of [longtitude, latitude, weight]
+    A point is a tuple or list of [latitude, longitude, weight]
+    Returns the weighted average of the points (the center of mass)
     '''
-    def collapse(self, points):
+    @staticmethod
+    def find_center(points):
         if not points:
             raise ValueError("List of points cannot be empty")
             
@@ -26,5 +26,14 @@ class PointAverager(object):
         else:
             return [total_long/total_weight, total_lat/total_weight, total_weight/len(points)]
         
-    def find_center(self, points):
-        pass
+    '''
+    Divides a plane into a grid. The plane is given by two points: the upper-left corner
+    and the lower-right corner.
+    Returns a list of corner pairs, one for each grid square.
+    '''
+    @staticmethod
+    def partition_grid(width, plane):
+        point1 = plane[0]
+        point2 = plane[1]
+        
+        return [[(0, 10), (0,0)], [(10,10), (10,0)]]
