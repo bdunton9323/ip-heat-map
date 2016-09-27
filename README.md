@@ -14,8 +14,11 @@ This project requires python version 2.7 to run. It also requires virtualenv for
 ```
 
 ### Set up the database
-Extract the two CSV files from the included **GeoLiteCity-latest.zip** file to the 'geodata' directory.
+This project expects the data to be in MongoDB. Mongo has built-in capabilities for geo data, and selecting documents that fall within a polygon.
 
+ - Extract the two CSV files from the included `GeoLiteCity-latest.zip` file to the `geodata\ipv4` directory.
+ - Extract the `GeoLiteCityv6.csv.gz` file to the `geodata\ipv6` directory.
+ 
 Install [mongodb](https://www.mongodb.com/download-center#community) and run it. You must use a version greater than 2.4.
  - [Windows instructions](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows/)
  - [Linux instructions](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-linux/)
@@ -34,8 +37,17 @@ The server requires the following libraries, which will be installed in the virt
   - tornado
   - pymongo
 
-Install the server using the provided **runserver.bat** file (if you are on linux you'll have to write your own - I didn't have a linux system to test on). This will start the python virtual environment and run the server.
+Install the server using the provided **runserver.bat** file (if you are on linux you'll have to write your own - I didn't have a linux system to test on). This will start the python virtual environment and run the server:
 
+```sh
+> cd server
+> runserver.bat
+```
+
+The unit tests can be run with:
+```sh
+> python -m unittest
+```
 
 ## Attributions
 This product includes GeoLite data created by MaxMind, available from http://www.maxmind.com.
