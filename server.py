@@ -15,7 +15,6 @@ class GetDataHandler(tornado.web.RequestHandler):
         self.collection = self.mongo[db_name][collection_name]
     
     def set_default_headers(self):
-        # TODO: change to the web server's domain after I am done developing
         self.set_header("Access-Control-Allow-Origin", "*")
         self.set_header("Access-Control-Allow-Headers", "x-requested-with, Content-Type, Origin, Accept")
         self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
@@ -72,6 +71,8 @@ class GetDataHandler(tornado.web.RequestHandler):
         squares = [plane]
         apply_averaging = False
         
+        # TODO: it's not costing that much right now, but I could improve this
+        # by just counting from the first find() result.
         count = self.collection.count(self.build_query(plane))
         print "Got", count, "documents from mongo"
         
@@ -100,13 +101,7 @@ class GetDataHandler(tornado.web.RequestHandler):
     def get_points_from_result(self, cursor):
         points = []
         for doc in cursor:
-            result = doc['loc']['coordinates']
-            # TODO: intensity needs to take into account the number of points.
-            # Also something needs to change with the zoom factor (higher blur? bigger 
-            # circles?) When doing the partitioned version, the radius should reflect the
-            # spread of points. Maybe I can base the radius on the maximum distance within 
-            # that grid cell.
-            
+            result = doc['loc']['coordinates']            
             # The map wants it in lat/long order, so just do it here to avoid
             # reordering the list later
             points.append((result[1], result[0], 5))
