@@ -9,9 +9,7 @@ import os
 from socket import AF_INET
 
 class GetDataHandler(tornado.web.RequestHandler):
-         
-    # TODO: this is called for every request. I might want to just use the
-    # adapter that I had before
+
     def initialize(self, mongo, db_name, collection_name):
         self.mongo = mongo
         self.collection = self.mongo[db_name][collection_name]
@@ -118,16 +116,19 @@ class GetDataHandler(tornado.web.RequestHandler):
 
 def main():
     db_name = "ipmap"
-    collection_name = "locations"
+    v6_collection = "locations_v6"
+    v4_collection = "locations_v4"
     
     mongo_client = MongoClient()
     port = 8888
     application = tornado.web.Application([
-        (r"/getdata", GetDataHandler, {"mongo": mongo_client, "db_name": db_name, "collection_name": collection_name}),
-        ],
+        (r"/getdatav4", GetDataHandler, {"mongo": mongo_client, "db_name": db_name, "collection_name": v4_collection}),
+        (r"/getdatav6", GetDataHandler, {"mongo": mongo_client, "db_name": db_name, "collection_name": v6_collection})],
         static_path = os.path.join(os.path.dirname(__file__), "static")
     )
 
+    print "listening on port 8888"
+    
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.bind(port, family=AF_INET)
     http_server.start(1)

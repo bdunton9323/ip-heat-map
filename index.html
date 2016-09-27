@@ -44,15 +44,79 @@
     .col-10 {width: 83.33%;}
     .col-11 {width: 91.66%;}
     .col-12 {width: 100%;}
+    
+    
+    /* This CSS makes the slider toggle switch. 
+      This was modified from the example code here: http://www.w3schools.com/howto/howto_css_switch.asp */
+      
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+    .switch input {display:none;}
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #2299FF;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+    input:checked + .slider {
+        background-color: #2299FF;
+    }
+    input:checked + .slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(26px);
+    }
+    /* make the toggle and the switch border rounded */
+    .slider.round {
+        border-radius: 34px;
+    }
+    .slider.round:before {
+        border-radius: 50%;
+    }
   </style>
 </head>
 
 <body>
   <div class="header col-12"><h1>IP Address Heat Map</h1></div>
+  
   <div class="row">
     <div class="col-12" id="mapid"></div>
   </div>
   
+  <!-- dataset selector -->
+  <div class="header col-12">
+    <div class="col-4"></div>
+    <div class="col-1"><h2>IPv4</h2></div>
+    <div class="col-1" id="slider">
+      <label class="switch">
+        <input id="dataselector" type="checkbox" checked>
+        <div class="slider round"></div>
+      </label>
+    </div>
+    <div class="col-1"><h2>IPv6</h2></div>
+    <div class="col-4"></div>
+  </div>
+
   <script type='text/javascript' src='heat-map.js'></script>
   </script>
 </body>

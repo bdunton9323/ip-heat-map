@@ -1,3 +1,7 @@
+
+// TODO: this has to be the URL of my server as seen externally
+var BASE_API_URL = "http://192.168.1.8:8888";
+
 // durham: [35.99, -78.8986]
 // manhattan: [40.7831, -73.9712]
 var mymap = L.map('mapid').setView([40.7831, -73.9712], 13);
@@ -11,6 +15,9 @@ var heatMap = {
     heat: null,
     points: [],
     opts: {radius: 30, blur: 30, maxZoom: 15},
+    
+    // Sets whether the IPv4 or IPv6 data should be displayed
+    dataSource: "v6",
     
     initHeatLayer: function() {
         this.heat = L.heatLayer([], this.opts).addTo(mymap);
@@ -36,9 +43,7 @@ function updateView(heatMap) {
     
     $.ajax({
         type: "GET",
-        
-        // TODO: this has to be the URL of my server as seen externally
-        url: "http://192.168.1.8:8888/getdata",
+        url: BASE_API_URL + "/getdata" + heatMap.dataSource,
 
         data: {
             lat1: upperLeftLat,
@@ -57,10 +62,25 @@ function updateView(heatMap) {
     });
 }
 
+
+
+
 $(document).ready(function(){
     heatMap.initHeatLayer();
     updateView(heatMap);
     mymap.on('moveend', function(){updateView(heatMap);});
+
+    document.getElementById('dataselector').checked = true;
+    document.getElementById('dataselector').onclick = function() {
+        if (this.checked) {
+            console.log("Using IPv6 data set");
+            heatMap.dataSource = "v6";
+        } else {
+            console.log("Using IPv4 data set");
+            heatMap.dataSource = "v4";
+        }
+        updateView(heatMap);
+    };
 });
 
 
