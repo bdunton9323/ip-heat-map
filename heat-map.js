@@ -2,13 +2,13 @@
 // TODO: this has to be the URL of my server as seen externally
 var BASE_API_URL = "http://192.168.1.8:8888";
 
+// Other points of interest
 // durham: [35.99, -78.8986]
 // manhattan: [40.7831, -73.9712]
-var mymap = L.map('mapid').setView([40.7831, -73.9712], 13);
+var mymap = L.map('mapid').setView([47.0207, 8.6530], 10);
 
-L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    subdomains: ['a','b','c']
+L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYmFkOTMyMyIsImEiOiJjaXRrc2cwazkwMDAyMm9wbmdmcjllOXcwIn0.X4q84qTqXZ7HKlpSiCWjVg', {
+    attribution: '&copy; <a href="https://www.mapbox.com/map-feedback/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>'
 }).addTo(mymap);
 
 var heatMap = {
@@ -26,11 +26,6 @@ var heatMap = {
     updateHeatLayer: function(points, zoom) {
         this.points = points;
         this.heat.setLatLngs(this.points);
-        if (zoom < 10) {
-            console.log("setting options");
-            //this.opts.blur = 100;
-            this.heat.setOptions(this.opts)
-        }
     }
 }
 
@@ -62,9 +57,6 @@ function updateView(heatMap) {
     });
 }
 
-
-
-
 $(document).ready(function(){
     heatMap.initHeatLayer();
     updateView(heatMap);
@@ -82,8 +74,3 @@ $(document).ready(function(){
         updateView(heatMap);
     };
 });
-
-
-
-
-

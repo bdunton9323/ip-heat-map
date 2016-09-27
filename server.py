@@ -75,6 +75,8 @@ class GetDataHandler(tornado.web.RequestHandler):
         count = self.collection.count(self.build_query(plane))
         print "Got", count, "documents from mongo"
         
+        # Apply some averaging to condense the points into fewer points
+        # to avoid overloading the network connection and slowing it down.
         if count > 10000:
             apply_averaging = True
             squares = CoordinateUtils.partition_grid(20, plane)
