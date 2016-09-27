@@ -27,6 +27,7 @@ Install [mongodb](https://www.mongodb.com/download-center#community) and run it.
 To populate the mongo database for the first time, or any time the data changes, run the Extract Transform and Load (ETL) script. There are separate scripts for the IPv4 data and the IPv6 data. The IPv4 data requires two files - one mapping IP address to location code, and the other mapping location code to geo coordinates. The IPv6 dataset has a single file, and it is a much smaller set. For convenience, there is a batch file that calls both import scripts. The batch file assumes mongo is running on `localhost:27017` and the data resides in `<projectroot>/geodata/ipv4` and `<projectroot>/geodata/ipv6`
 
 ```sh
+> cd etl
 > etl_full.bat
 ```
 
